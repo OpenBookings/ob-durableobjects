@@ -1,54 +1,48 @@
-# Durable Objects Starter
+# ob-durableobjects
 
-[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/cloudflare/templates/tree/main/hello-world-do-template)
+Cloudflare Worker + Durable Objects backing OpenBookings' real-time host/guest
+messaging. Replaces the SSE + Postgres LISTEN/NOTIFY transport previously
+used in `apps/business`.
 
-<!-- dash-content-start -->
+One `UserThreadDO` instance per OpenBookings user (Better Auth user id),
+holding that user's open WebSocket connection(s), pinned to the `eu`
+jurisdiction. Clients connect to `/connect?token=<token>`, where the token is
+minted server-side by `apps/business`'s `POST /api/realtime/token` and
+verified here via HMAC-SHA256 before the WebSocket upgrade is allowed.
 
-This is a [Durable Object](https://developers.cloudflare.com/durable-objects/) starter template. It comes with a `sayHello` method that returns `Hello World!`.
-
-<!-- dash-content-end -->
-
-Outside of this repo, you can start a new project with this template using [C3](https://developers.cloudflare.com/pages/get-started/c3/) (the `create-cloudflare` CLI):
-
-```bash
-npm create cloudflare@latest -- --template=cloudflare/templates/hello-world-do-template
-```
-
-## Getting Started
-
-First, run:
+## Setup
 
 ```bash
 npm install
-# or
-yarn install
-# or
-pnpm install
-# or
-bun install
-```
-
-Then run the development server (using the package manager of your choice):
-
-```bash
 npm run dev
 ```
 
-Open [http://localhost:8787](http://localhost:8787) with your browser to see the result.
+## Required secret
 
-You can start editing the project by modifying `src/index.ts`.
+`REALTIME_TOKEN_SECRET` must match the value `apps/business` uses to sign
+tokens (`REALTIME_TOKEN_SECRET` in its env). Set it with:
 
-## Deploying To Production
+```bash
+wrangler secret put REALTIME_TOKEN_SECRET
+```
 
-| Command             | Action                                |
-| :------------------ | :------------------------------------ |
-| `npm run deploy`    | Deploy your application to Cloudflare |
-| `npm wrangler tail` | View real-time logs for all Workers   |
+Locally, put it in `.dev.vars` (gitignored):
 
-## Learn More
+```
+REALTIME_TOKEN_SECRET=dev-only-realtime-secret-change-in-prod
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Commands
 
-- [Durable Objects](https://developers.cloudflare.com/durable-objects/) - learn about Durable Objects
+| Command           | Action                                |
+| :----------------- | :------------------------------------ |
+| `npm run dev`      | Start local dev server                |
+| `npm run check`    | Typecheck + `wrangler deploy --dry-run` |
+| `npm run deploy`   | Deploy to Cloudflare                  |
+| `npx wrangler tail`| View real-time logs                   |
 
-Your feedback and contributions are welcome!
+## Status
+
+Scaffolding + auth handshake only (connection accept, token verification).
+Message delivery (apps/business -> DO -> socket), the offline-fallback alarm,
+and routing under `e.openbookings.co` land in follow-up changes.

@@ -1,0 +1,3 @@
+REALTIME_TOKEN_SECRET=dev-only-realtime-secret-change-in-prod
+REALTIME_SERVICE_SECRET=dev-only-realtime-service-secret-change-in-prod
+APPS_BUSINESS_URL=http://localhost:3001
