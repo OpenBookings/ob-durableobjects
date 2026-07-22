@@ -6,8 +6,13 @@
 	"upload_source_maps": true,
 	"migrations": [
 		{
-			"new_sqlite_classes": ["UserThreadDO"],
+			"new_sqlite_classes": ["MyDurableObject"],
 			"tag": "v1"
+		},
+		{
+			"deleted_classes": ["MyDurableObject"],
+			"new_sqlite_classes": ["UserThreadDO"],
+			"tag": "v2"
 		}
 	],
 	"durable_objects": {
