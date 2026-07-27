@@ -45,7 +45,12 @@ export class UserThreadDO extends DurableObject<Env> {
 	}
 
 	async webSocketClose(ws: WebSocket, code: number, reason: string, _wasClean: boolean) {
-		ws.close(code, reason);
+		// 1005/1006/1015 are reserved status values the runtime uses to report
+		// "no code was actually on the wire" — they can be received but are
+		// invalid to send back, so ws.close() throws InvalidAccessError if we
+		// just echo whatever the client reported.
+		const isReservedCode = code === 1005 || code === 1006 || code === 1015;
+		ws.close(isReservedCode ? 1000 : code, reason);
 	}
 
 	async webSocketError(_ws: WebSocket, _error: unknown) {
